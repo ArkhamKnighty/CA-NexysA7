@@ -1,0 +1,76 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.all;
+use IEEE.STD_LOGIC_UNSIGNED.all;
+
+entity ssd is
+           Port ( clk : in std_logic;
+           input: in  std_logic_vector(0 to 31);
+           o_cat: out std_logic_vector(0 to 6);
+           o_an : out std_logic_vector(0 to 7));
+end ssd;
+
+architecture Behavioral of ssd is
+signal count : std_logic_vector(0 to 16) := x"0000";
+signal d     : std_logic_vector(0 to 7);
+signal s     : std_logic_vector(0 to 2);
+signal o_mux : std_logic_vector(3 to 0);
+signal in_hex: std_logic_vector(3 to 0);
+signal out_hex:std_logic_vector(6 downto 0);
+
+    begin
+
+      process(clk)
+        begin
+          if ( rising_edge(clk) ) then count <= count + 1;
+          end if;
+      end process;
+     
+      s <= count(16 downto 14);
+      process(s)
+        begin
+            case s is
+                when "000" => o_an <= "11111110";
+                when "001" => o_an <= "11111101";
+                when "010" => o_an <= "11111011";
+                when "011" => o_an <= "11110111";
+                when "100" => o_an <= "11101111";
+                when "101" => o_an <= "11011111";
+                when "110" => o_an <= "10111111";
+                when "111" => o_an <= "01111111";
+            end case;
+            
+       
+      end process;
+     
+      process(s)
+              begin
+                  case s is
+                      when "000" => o_mux <= input(3 downto 0);
+                      when "001" => o_mux <= input(7 downto 4);
+                      when "010" => o_mux <= input(11 downto 8);
+                      when "011" => o_mux <= input(15 downto 12);
+                      when "100" => o_mux <= input(19 downto 16);
+                      when "101" => o_mux <= input(23 downto 20);
+                      when "110" => o_mux <= input(27 downto 24);
+                      when "111" => o_mux <= input(31 downto 28);
+                  end case;
+                  
+             
+      end process;
+      
+      process(o_mux)
+            begin
+                case o_mux is
+                    when "0000" => out_hex <= "1000000";--0
+                    when "0001" => out_hex <= "1001111";--1
+                    when "0010" => out_hex <= "0100100";--2
+                    when "0011" => out_hex <= "0110000";--3
+                    when "0100" => out_hex <= "0011001";--4
+                    when "0101" => out_hex <= "0010010";--5
+                    when "0110" => out_hex <= "0000010";--6
+                    when "0111" => out_hex <= "1111000";--7
+                end case;
+      end process;
+      o_cat <= out_hex;
+end Behavioral;
